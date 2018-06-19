@@ -1,5 +1,4 @@
-package Selenium;
-
+package com.qait.automation.MavPrj;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -10,18 +9,39 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Actions;
+import org.testng.annotations.Test;
 
+import junit.framework.Assert;
+import junit.framework.TestCase;
 
-
-public class Tatoc {
+public class TatocTest extends TestCase {
 	
-	public static void main(String args[]) throws InterruptedException {
-		
-		System.setProperty("webdriver.chrome.driver","src/Selenium/chromedriver");
-		WebDriver driver = new ChromeDriver();
-		driver.get("http://10.0.1.86/tatoc");
+	WebDriver driver;
+	
+	public TatocTest()
+	{
+		System.setProperty("webdriver.chrome.driver","src/test/chromedriver");
+		this.driver=new ChromeDriver();
+		driver.get("http://10.0.1.86/tatoc");	
 		driver.findElement(By.cssSelector("a")).click();
-		driver.findElement(By.className("greenbox")).click();
+	}
+	
+	@Test
+	public void gridGate()
+	{   WebElement ele1;
+		ele1=driver.findElement(By.className("greenbox"));
+		Assert.assertTrue(ele1.isDisplayed());
+		ele1.click();
+		String ExpUrl="http://10.0.1.86/tatoc/basic/frame/dungeon";
+		//String act=driver.getCurrentUrl();
+		//System.out.println(act);
+		Assert.assertEquals(ExpUrl, driver.getCurrentUrl());
+		
+	}
+	
+	@Test(dependsOnMethods = {"gridGate"})
+	public void frameDungeon()
+	{
 		WebElement ele = driver.findElement(By.id("main"));
 		driver.switchTo().frame(ele);
 		String expAnswer = driver.findElement(By.id("answer")).getAttribute("class");		
@@ -45,8 +65,14 @@ public class Tatoc {
         }
 		
         driver.findElement(By.linkText("Proceed")).click();
-        
-        
+        String ExpUrl="http://10.0.1.86/tatoc/basic/drag";
+		Assert.assertEquals(ExpUrl, driver.getCurrentUrl());
+	
+
+	}
+	@Test(dependsOnMethods = {"frameDungeon"})
+	public void dragAround()
+	{
         WebElement from=driver.findElement(By.id("dragbox"));
         
         WebElement to=driver.findElement(By.id("dropbox"));
@@ -56,9 +82,16 @@ public class Tatoc {
 	//Dragged and dropped.		
         act.dragAndDrop(from, to).build().perform();
         driver.findElement(By.linkText("Proceed")).click();
-        driver.findElement(By.linkText("Launch Popup Window")).click();
-        
-        String parentWindowHandler = driver.getWindowHandle(); // Store your parent window
+        String ExpUrl="http://10.0.1.86/tatoc/basic/windows";
+        Assert.assertEquals(ExpUrl, driver.getCurrentUrl());
+    	
+
+	}
+	
+	@Test(dependsOnMethods = {"dragAround"})
+	public void popupWindow()
+	{   driver.findElement(By.linkText("Launch Popup Window")).click();
+		String parentWindowHandler = driver.getWindowHandle(); // Store your parent window
         String subWindowHandler = null;
 
         Set<String> handles = driver.getWindowHandles(); // get all window handles
@@ -76,24 +109,26 @@ public class Tatoc {
         driver.findElement(By.id("submit")).click();
         driver.switchTo().window(parentWindowHandler);
         driver.findElement(By.linkText("Proceed")).click();
-        
-        
-        
-        
-        
-        
-        driver.findElement(By.linkText("Generate Token")).click();
+        String ExpUrl="http://10.0.1.86/tatoc/basic/cookie";
+        System.out.println(driver.getCurrentUrl());
+        Assert.assertEquals(ExpUrl, driver.getCurrentUrl());
+    	
+	}
+	
+	@Test(dependsOnMethods = {"popupWindow"})
+	public void cookieadd()
+	{
+		driver.findElement(By.linkText("Generate Token")).click();
         String token=driver.findElement(By.id("token")).getText();
        
         String []ss=token.split("\\s+");
         System.out.println(ss[1]);
         Cookie name=new Cookie("Token",ss[1]);
         driver.manage().addCookie(name);
-        Thread.sleep(1000);
         driver.findElement(By.linkText("Proceed")).click();
-        Thread.sleep(3000);
-        //driver.quit();
-        
-        
- 	
-	}}
+        String ExpUrl="http://10.0.1.86/tatoc/end";
+        Assert.assertEquals(ExpUrl, driver.getCurrentUrl());
+    	
+	}
+
+}
