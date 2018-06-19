@@ -1,0 +1,99 @@
+package Selenium;
+
+
+import java.util.Iterator;
+import java.util.Set;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.Cookie;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.interactions.Actions;
+
+
+
+public class Tatoc {
+	
+	public static void main(String args[]) throws InterruptedException {
+		
+		System.setProperty("webdriver.chrome.driver","src/Selenium/chromedriver");
+		WebDriver driver = new ChromeDriver();
+		driver.get("http://10.0.1.86/tatoc");
+		driver.findElement(By.cssSelector("a")).click();
+		driver.findElement(By.className("greenbox")).click();
+		WebElement ele = driver.findElement(By.id("main"));
+		driver.switchTo().frame(ele);
+		String expAnswer = driver.findElement(By.id("answer")).getAttribute("class");		
+        
+        
+        Boolean cond=true;
+        
+        while(cond)
+        {   driver.findElement(By.linkText("Repaint Box 2")).click();
+
+        	WebElement childele = driver.findElement(By.id("child"));
+    		driver.switchTo().frame(childele);	
+    		String actualAnswer = driver.findElement(By.id("answer")).getAttribute("class");		
+    		
+			if(actualAnswer.equals(expAnswer)) {
+				cond = false;
+				
+			}
+			driver.switchTo().parentFrame();
+			
+        }
+		
+        driver.findElement(By.linkText("Proceed")).click();
+        
+        
+        WebElement from=driver.findElement(By.id("dragbox"));
+        
+        WebElement to=driver.findElement(By.id("dropbox"));
+        		
+        Actions act=new Actions(driver);					
+
+	//Dragged and dropped.		
+        act.dragAndDrop(from, to).build().perform();
+        driver.findElement(By.linkText("Proceed")).click();
+        driver.findElement(By.linkText("Launch Popup Window")).click();
+        
+        String parentWindowHandler = driver.getWindowHandle(); // Store your parent window
+        String subWindowHandler = null;
+
+        Set<String> handles = driver.getWindowHandles(); // get all window handles
+        Iterator<String> iterator = handles.iterator();
+        while (iterator.hasNext()){
+            subWindowHandler = iterator.next();
+        }
+        driver.switchTo().window(subWindowHandler); // switch to popup window
+
+        // Now you are in the popup window, perform necessary actions here
+
+        
+        driver.findElement(By.id("name")).click();
+        driver.findElement(By.id("name")).sendKeys("Rahul");
+        driver.findElement(By.id("submit")).click();
+        driver.switchTo().window(parentWindowHandler);
+        driver.findElement(By.linkText("Proceed")).click();
+        
+        
+        
+        
+        
+        
+        driver.findElement(By.linkText("Generate Token")).click();
+        String token=driver.findElement(By.id("token")).getText();
+       
+        String []ss=token.split("\\s+");
+        System.out.println(ss[1]);
+        Cookie name=new Cookie("Token",ss[1]);
+        driver.manage().addCookie(name);
+        Thread.sleep(1000);
+        driver.findElement(By.linkText("Proceed")).click();
+        Thread.sleep(3000);
+        //driver.quit();
+        
+        
+ 	
+	}}
